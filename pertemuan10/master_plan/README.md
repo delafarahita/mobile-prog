@@ -5,7 +5,8 @@
 # Tugas Praktikum 1: Dasar State dengan Model-View
 1. Selesaikan langkah-langkah praktikum tersebut, lalu dokumentasikan berupa GIF hasil akhir praktikum beserta penjelasannya di file README.md! Jika Anda menemukan ada yang error atau tidak berjalan dengan baik, silakan diperbaiki.
 ## Hasil
-
+![alt text](images/TugasPrak1-No1.gif)
+Pada Praktikum 1 kita pembuatan aplikasi yang memiliki fitur scrollable list yang dapat menampilkan daftar tugas, sehingga pengguna dapat menambah, mengedit, dan mencentang status tugas. Selain itu, terdapat juga fitur untuk menangani keyboard saat pengguna berinteraksi dengan input teks.
 
 2. Jelaskan maksud dari langkah 4 pada praktikum tersebut! Mengapa dilakukan demikian?
 Pada langkah 4 pembuatan file data_layer.dart yang bertujuan untuk menghubungkan model Task dan Plan secara lebih terorganisir. File ini mengekspor kedua model tersebut, sehingga saat model Task dan Plan diperlukan di bagian lain proyek, kita cukup mengimpor data_layer.dart. Ini menyederhanakan proses impor dan membuat kode lebih rapi serta mudah dikelola.
@@ -15,6 +16,10 @@ Variabel plan pada Langkah 6 adalah instance dari class Plan yang menyimpan daft
 
 4. Lakukan capture hasil dari Langkah 9 berupa GIF, kemudian jelaskan apa yang telah Anda buat!
 ## Hasil
+![alt text](images/TugasPrak1-No4.gif)
+Pada Langkah 9, kita membuat widget _buildTaskTile untuk menampilkan daftar tugas menggunakan ListTile, di mana setiap tugas memiliki Checkbox dan TextFormField:
+- Checkbox: Menunjukkan status penyelesaian tugas yang bisa dicentang atau tidak. Ketika status berubah, data tugas diperbarui menggunakan setState.
+- TextFormField: Menampilkan deskripsi tugas yang dapat diubah, dan setiap perubahan akan memperbarui data tugas yang bersangkutan.
 
 5. Apa kegunaan method pada Langkah 11 dan 13 dalam lifecyle state ?
 - Langkah 11 (initState Method):
