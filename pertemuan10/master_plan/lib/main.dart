@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
-import './views/plan_screen.dart';
+import 'provider/plan_provider.dart'; 
+import 'views/plan_creator_screen.dart'; 
 
-void main() => runApp(MasterPlanApp());
+void main() {
+  runApp(MyApp());
+}
 
-class MasterPlanApp extends StatelessWidget {
-  const MasterPlanApp({super.key});
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-     theme: ThemeData(primarySwatch: Colors.purple),
-     home: PlanScreen(),
+    return PlanProvider(  
+      child: MaterialApp(
+        title: 'Master Plan App',
+        theme: ThemeData(
+          primarySwatch: Colors.purple,
+        ),
+        home: PlanCreatorScreen(), 
+      ),
     );
   }
 }

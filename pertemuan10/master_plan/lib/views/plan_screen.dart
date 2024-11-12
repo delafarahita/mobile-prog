@@ -1,115 +1,147 @@
-import '../models/data_layer.dart';
 import 'package:flutter/material.dart';
+import '../models/data_layer.dart'; // Pastikan path model benar
+import '../provider/plan_provider.dart';
 
-class PlanScreen extends StatefulWidget {
-  const PlanScreen({super.key});
-
-  @override
-  State createState() => _PlanScreenState();
-}
-
-class _PlanScreenState extends State<PlanScreen> {
-  Plan plan = const Plan();
+class PlanScreen extends StatelessWidget {
+  final Plan plan;
+  const PlanScreen({super.key, required this.plan});
 
   @override
   Widget build(BuildContext context) {
+    // Mendapatkan ValueNotifier<List<Plan>> untuk mendengarkan perubahan list plan
+    ValueNotifier<List<Plan>> plansNotifier = PlanProvider.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Master Plan Dela')), 
-      body: _buildList(),
-      floatingActionButton: _buildAddTaskButton(),
+      appBar: AppBar(title: Text(plan.name)),
+      body: ValueListenableBuilder<List<Plan>>(
+        valueListenable: plansNotifier,
+        builder: (context, plans, child) {
+          if (plans.isEmpty) {
+            return Center(child: Text('No plans available.'));
+          }
+
+          // Mencari plan yang sesuai berdasarkan nama plan
+          Plan currentPlan = plans.firstWhere(
+            (p) => p.name == plan.name,
+            orElse: () => Plan(
+                name: 'Plan Not Found',
+                tasks: []), // Menghindari kesalahan jika plan tidak ditemukan
+          );
+
+          return Column(
+            children: [
+              Expanded(
+                  child: _buildList(currentPlan)), // Menampilkan daftar task
+              SafeArea(
+                  child: Text(currentPlan
+                      .completenessMessage)), // Menampilkan pesan kesempurnaan
+            ],
+          );
+        },
+      ),
+      floatingActionButton:
+          _buildAddTaskButton(context), // Tombol untuk menambah task
     );
   }
 
-  // Langkah 7: Buat Method _buildAddTaskButton()
-  Widget _buildAddTaskButton() {
+  Widget _buildList(Plan plan) {
+    // Pastikan bahwa tasks tidak kosong sebelum menampilkan
+    if (plan.tasks.isEmpty) {
+      return Center(child: Text('No tasks available.'));
+    }
+
+    return ListView.builder(
+      itemCount: plan.tasks.length,
+      itemBuilder: (context, index) =>
+          _buildTaskTile(plan.tasks[index], index, context),
+    );
+  }
+
+  // Menambahkan task baru ke dalam plan
+  Widget _buildAddTaskButton(BuildContext context) {
+    ValueNotifier<List<Plan>> planNotifier = PlanProvider.of(context);
     return FloatingActionButton(
       child: const Icon(Icons.add),
       onPressed: () {
-        setState(() {
-          plan = Plan(
-            name: plan.name,
-            tasks: List<Task>.from(plan.tasks)..add(const Task()),
+        Plan currentPlan = plan;
+        // Mencari index plan yang sesuai
+        int planIndex =
+            planNotifier.value.indexWhere((p) => p.name == currentPlan.name);
+
+        if (planIndex == -1) {
+          return; // Jika plan tidak ditemukan, tidak lakukan apapun
+        }
+
+        List<Task> updatedTasks = List<Task>.from(currentPlan.tasks)
+          ..add(Task(description: 'New Task', complete: false)); // Tambah task baru dengan deskripsi default
+        planNotifier.value = List<Plan>.from(planNotifier.value)
+          ..[planIndex] = Plan(
+            name: currentPlan.name,
+            tasks: updatedTasks,
           );
-        });
       },
     );
   }
 
-  // Langkah 8: Buat Widget _buildList()
-  // Widget _buildList() {
-  //   return ListView.builder(
-  //     itemCount: plan.tasks.length,
-  //     itemBuilder: (context, index) =>
-  //         _buildTaskTile(plan.tasks[index], index),
-  //   );
-  // }
+  // Membuat tile untuk menampilkan dan mengedit task
+  Widget _buildTaskTile(Task task, int index, BuildContext context) {
+    ValueNotifier<List<Plan>> planNotifier = PlanProvider.of(context);
 
-  // Langkah 9: Buat Widget _buildTaskTile
-  Widget _buildTaskTile(Task task, int index) {
     return ListTile(
       leading: Checkbox(
         value: task.complete,
         onChanged: (selected) {
-          setState(() {
-            plan = Plan(
-              name: plan.name,
-              tasks: List<Task>.from(plan.tasks)
-                ..[index] = Task(
-                  description: task.description,
-                  complete: selected ?? false,
-                ),
+          Plan currentPlan = plan;
+          // Menemukan index plan yang sesuai dan memperbarui status task
+          int planIndex =
+              planNotifier.value.indexWhere((p) => p.name == currentPlan.name);
+
+          if (planIndex == -1 || index >= currentPlan.tasks.length) {
+            return; // Jika plan atau task tidak ditemukan, tidak lakukan apapun
+          }
+
+          // Memperbarui status checkbox untuk task yang dipilih
+          List<Task> updatedTasks = List<Task>.from(currentPlan.tasks);
+          updatedTasks[index] = Task(
+            description: task.description,
+            complete: selected ?? false,
+          );
+
+          // Memperbarui task dalam plan
+          planNotifier.value = List<Plan>.from(planNotifier.value)
+            ..[planIndex] = Plan(
+              name: currentPlan.name,
+              tasks: updatedTasks,
             );
-          });
         },
       ),
       title: TextFormField(
         initialValue: task.description,
         onChanged: (text) {
-          setState(() {
-            plan = Plan(
-              name: plan.name,
-              tasks: List<Task>.from(plan.tasks)
-                ..[index] = Task(
-                  description: text,
-                  complete: task.complete,
-                ),
+          Plan currentPlan = plan;
+          // Menemukan index plan yang sesuai dan memperbarui deskripsi task
+          int planIndex =
+              planNotifier.value.indexWhere((p) => p.name == currentPlan.name);
+
+          if (planIndex == -1 || index >= currentPlan.tasks.length) {
+            return; // Jika plan atau task tidak ditemukan, tidak lakukan apapun
+          }
+
+          // Memperbarui deskripsi task
+          List<Task> updatedTasks = List<Task>.from(currentPlan.tasks);
+          updatedTasks[index] = Task(
+            description: text,
+            complete: task.complete,
+          );
+
+          // Memperbarui task dalam plan
+          planNotifier.value = List<Plan>.from(planNotifier.value)
+            ..[planIndex] = Plan(
+              name: currentPlan.name,
+              tasks: updatedTasks,
             );
-          });
         },
       ),
     );
   }
-
-  // Langkah 10: Tambah Scroll Controller
-  late ScrollController scrollController;
-
-  // Langkah 11: Tambah Scroll Listener
-  @override
-  void initState() {
-    super.initState();
-    scrollController = ScrollController()
-      ..addListener(() {
-        FocusScope.of(context).requestFocus(FocusNode());
-      });
-  }
-
-  // Langkah 12: Tambah Controller dan Keyboard Behavior
-  Widget _buildList() {
-    return ListView.builder(
-      controller: scrollController,
-      keyboardDismissBehavior: Theme.of(context).platform == TargetPlatform.iOS
-          ? ScrollViewKeyboardDismissBehavior.onDrag
-          : ScrollViewKeyboardDismissBehavior.manual,
-      itemCount: plan.tasks.length,
-      itemBuilder: (context, index) =>
-          _buildTaskTile(plan.tasks[index], index),
-    );
-  }
-
-  // Langkah 13: Tambah Method dispose()
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
- }
+}
